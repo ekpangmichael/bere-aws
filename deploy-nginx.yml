@@ -1,0 +1,51 @@
+---
+- name: Install Nginx and deploy personal web page
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+
+    - name: Start and enable Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Deploy custom HTML page
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Peter Ekpang</title>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Ekpang Peter Bere</h1>
+              <div class="hostname">
+                <p>Hostname: <span>{{ ansible_hostname }}</span></p>
+                <p>Private IP: <span>{{ ansible_default_ipv4.address }}</span></p>
+              </div>
+              <div class="about">
+                <h2>About Me</h2>
+                <p>My name is Ekpang Peter Bere, and I'm a proud native of Boki Local Government Area, <strong>Cross River State</strong>, <strong>Nigeria</strong>. Coming from a community rich in culture, tradition, and strong values has shaped my discipline, character, and determination to grow—personally and professionally.</p>
+                <p>I'm currently enrolled in a diploma program at <strong>AltSchool Africa</strong>, studying Cloud Engineering. Through hands-on learning, I'm building skills in cloud infrastructure, Linux, networking, DevOps practices, and automation—tools and systems that power modern digital services at scale.</p>
+                <p>I'm passionate about designing reliable, scalable, and secure infrastructure that solves real-world problems. I'm committed to continuous learning and to contributing meaningfully to the global technology ecosystem. Beyond personal growth, I aim to create impact, inspire others from my community, and support the expansion of tech opportunities in Nigeria and beyond.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        mode: '0644'
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
